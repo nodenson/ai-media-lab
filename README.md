@@ -1,44 +1,62 @@
-\# AI Media Lab
-
-
+# AI Media Lab
 
 Personal media automation pipeline for turning raw footage into searchable, editable content.
 
+## Goal
 
+Build a workflow that:
 
-\## Current Goal
+- ingests footage from Meta glasses, iPhone, and other sources
+- organizes media for processing
+- transcribes speech with Faster-Whisper
+- finds strong clip moments automatically
+- cuts candidate clips with FFmpeg
+- prepares content for editing in CapCut
+- supports edit once, publish everywhere
 
-Build a simple workflow that:
+## Current Status
 
+- Ubuntu server is running
+- SSH is working
+- Faster-Whisper is installed and working
+- Transcription pipeline is working
+- Clip suggestion pipeline is working
+- FFmpeg clip cutting is working
+- Full pipeline script is working
+- Watcher automation is running
+- GitHub repo is live
 
+## Current Workflow
 
-\- ingests footage from Meta glasses, iPhone, and Hover Air
+Capture -> Inbox -> Transcribe -> Find Clips -> Cut Clips -> Edit in CapCut -> Post -> Archive
 
-\- organizes and renames files automatically
+## Scripts
 
-\- transcribes speech with Faster-Whisper
+- `transcribe.py` — transcribes audio/video into text
+- `clip_finder.py` — scores transcript lines and suggests clip moments
+- `cut_clips.py` — cuts real video clips from suggested timestamps
+- `process_video.py` — runs the full pipeline on one file
+- `watch_inbox.py` — watches the inbox and triggers processing automatically
 
-\- prepares clips for editing in CapCut
+## Usage
 
-\- supports edit once, publish everywhere
+Run the full pipeline on one file:
 
+```bash
+python3 process_video.py /path/to/video.mp4
 
+Run transcription only:
 
-\## Current Status
+'''bash
+python3 transcribe.py /path/to/video.mp4
 
-\- Ubuntu server is running
+Run the watcher:
 
-\- SSH is working
+'''bash
+python3 watch_inbox.py
 
-\- Faster-Whisper is installed
+Notes
 
-\- Initial transcription pipeline is being tested
+This repo is for code and lightweight text outputs. Raw media and generated clip files should stay out of version control.
 
-\- Git repo is set up on Windows
-
-
-
-\## Planned Workflow
-
-Capture -> Inbox -> Processing -> Edit Next -> CapCut -> Ready to Post -> Archive
 
