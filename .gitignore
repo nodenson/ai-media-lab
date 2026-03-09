@@ -1,0 +1,12 @@
+# media
+inbox/
+archive/
+outputs/
+
+# generated data
+transcripts/
+clips/
+
+# python
+__pycache__/
+*.pyc
