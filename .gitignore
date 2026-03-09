@@ -1,12 +1,27 @@
-# media
-inbox/
-archive/
-outputs/
-
-# generated data
-transcripts/
-clips/
-
-# python
+# Python
+venv/
 __pycache__/
 *.pyc
+
+# Logs
+logs/
+
+# Runtime folders
+inbox/
+processing/
+outputs/
+archive/
+done/
+
+# Generated data
+clips/
+transcripts/
+
+# Media
+*.mp4
+*.wav
+*.mkv
+*.mov
+
+# OS junk
+.DS_Store
