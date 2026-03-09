@@ -1,0 +1,2 @@
+[0.00s -> 3.00s]  You're a little bit more, you're a little bit more.
+[3.00s -> 5.00s]  You're a little bit more.
