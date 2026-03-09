@@ -18,7 +18,10 @@ if not clips_file.exists():
     print(f"Clips file not found: {clips_file}")
     sys.exit(1)
 
-output_dir = Path.home() / "ai_lab" / "outputs" / video_file.stem
+base = Path.home() / "ai_lab"
+srt_file = base / "transcripts" / f"{video_file.stem}.srt"
+
+output_dir = base / "outputs" / video_file.stem
 output_dir.mkdir(parents=True, exist_ok=True)
 
 lines = clips_file.read_text(encoding="utf-8").splitlines()
@@ -30,20 +33,32 @@ for line in lines:
         continue
 
     start, end = m.groups()
-    out_file = output_dir / f"clip_{count+1}_{start.replace('.', '_')}_{end.replace('.', '_')}.mp4"
+    clip_file = output_dir / f"clip_{count+1}_{start.replace('.', '_')}_{end.replace('.', '_')}.mp4"
+    captioned_file = output_dir / f"clip_{count+1}_{start.replace('.', '_')}_{end.replace('.', '_')}_captioned.mp4"
 
-    cmd = [
+    cut_cmd = [
         "ffmpeg", "-y",
         "-i", str(video_file),
         "-ss", start,
         "-to", end,
         "-c:v", "libx264",
         "-c:a", "aac",
-        str(out_file)
+        str(clip_file)
     ]
 
-    print("Running:", " ".join(cmd))
-    subprocess.run(cmd, check=False)
+    print("Running:", " ".join(cut_cmd))
+    subprocess.run(cut_cmd, check=False)
+
+    if srt_file.exists():
+        caption_cmd = [
+            "ffmpeg", "-y",
+            "-i", str(clip_file),
+            "-vf", f"subtitles={srt_file}",
+            str(captioned_file)
+        ]
+        print("Running:", " ".join(caption_cmd))
+        subprocess.run(caption_cmd, check=False)
+
     count += 1
 
 print(f"Done. Created {count} clips in {output_dir}")
