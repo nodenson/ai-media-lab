@@ -20,150 +20,189 @@ Build a workflow that:
 
 # Current Status
 
-Working components:
+The system currently supports:
 
 - Ubuntu server running
-- SSH access working
-- Python virtual environment active
+- SSH access configured
 - Faster-Whisper transcription working
-- Clip suggestion system working
-- FFmpeg clip cutting working
-- Full pipeline script working
-- Inbox watcher automation running
-- GitHub repo initialized
+- Automated clip detection
+- FFmpeg clip cutting
+- Automatic vertical clip generation
+- Caption support
+- Watcher automation running
+- GitHub repo active
+
+---
+
+# Pipeline Overview
+
+```
+capture
+↓
+inbox
+↓
+transcription
+↓
+clip detection
+↓
+clip generation
+↓
+vertical export
+↓
+edit in CapCut
+↓
+publish
+```
 
 ---
 
 # Folder Structure
 
-\`\`\`
+```
 ai_lab/
-├── inbox/        # drop new videos here
-├── archive/      # processed source videos
-├── transcripts/  # .txt and .srt transcription outputs
-├── clips/        # suggested clip timestamps
-├── outputs/      # rendered clips
-├── logs/         # watcher logs
-├── models/       # downloaded AI models
-\`\`\`
-
----
-
-# Pipeline
-
-\`\`\`
-Capture
-   ↓
-Drop video in inbox
-   ↓
-Watcher detects file
-   ↓
-Transcribe speech
-   ↓
-Find clip moments
-   ↓
-Cut clips
-   ↓
-Outputs ready for editing
-   ↓
-Edit in CapCut
-   ↓
-Post
-   ↓
-Archive source
-\`\`\`
+│
+├── inbox/            # new media dropped here
+├── processing/       # temporary processing
+├── outputs/          # generated clips
+├── archive/          # processed source files
+│
+├── transcripts/      # speech transcripts
+├── clips/            # clip suggestions
+│
+├── logs/             # pipeline logs
+├── models/           # AI models
+│
+├── clip_finder.py
+├── cut_clips.py
+├── process_video.py
+├── transcribe.py
+├── watch_inbox.py
+└── run_ai_lab.sh
+```
 
 ---
 
 # Scripts
 
-\`transcribe.py\`
-- transcribes audio/video into text and subtitles
+### transcribe.py
+Uses Faster-Whisper to generate transcript and subtitle files.
 
-\`clip_finder.py\`
-- scores transcript lines
-- identifies promising clip timestamps
+Outputs:
 
-\`cut_clips.py\`
-- cuts clips using FFmpeg
-- optionally burns subtitles
-
-\`process_video.py\`
-- runs the full pipeline on a single file
-
-\`watch_inbox.py\`
-- monitors the inbox
-- automatically processes new files
+```
+transcripts/video_name.txt
+transcripts/video_name.srt
+```
 
 ---
 
-# Basic Usage
+### clip_finder.py
 
-Run full pipeline manually:
+Analyzes transcript lines and identifies strong moments.
 
-\`\`\`
+Uses scoring based on:
+
+- sentence completeness
+- motivational / dramatic language
+- clip length
+- speech structure
+
+Outputs:
+
+```
+clips/video_name_clips.txt
+```
+
+---
+
+### cut_clips.py
+
+Uses FFmpeg to generate video clips from suggested timestamps.
+
+Creates:
+
+```
+clip_1.mp4
+clip_1_vertical.mp4
+clip_1_captioned.mp4
+```
+
+---
+
+### process_video.py
+
+Runs the full pipeline for a single video.
+
+```
 python3 process_video.py /path/to/video.mp4
-\`\`\`
+```
 
-Run transcription only:
+---
 
-\`\`\`
-python3 transcribe.py /path/to/video.mp4
-\`\`\`
+### watch_inbox.py
 
-Run watcher manually:
+Watches the inbox folder and triggers processing automatically.
 
-\`\`\`
+Run:
+
+```
 python3 watch_inbox.py
-\`\`\`
-
-Run watcher daemon:
-
-\`\`\`
-tmux new -d -s ailab '~/ai_lab/run_ai_lab.sh'
-\`\`\`
-
-View logs:
-
-\`\`\`
-tail -f ~/ai_lab/logs/watcher.log
-\`\`\`
+```
 
 ---
 
-# Drop-Folder Workflow
+### run_ai_lab.sh
 
-1. Record footage
-2. Upload video to server
-3. Drop file into:
+Launches the full watcher pipeline.
 
-\`\`\`
-~/ai_lab/inbox/
-\`\`\`
-
-The system will automatically:
-
-- transcribe
-- find clips
-- render outputs
+```
+./run_ai_lab.sh
+```
 
 ---
 
-# Notes
+# Typical Workflow
 
-- Raw media should not be committed to GitHub
-- Only scripts and lightweight outputs belong in the repo
-- Large media files stay local on the server
+1. Capture footage (iPhone / Meta glasses / camera)
+2. Move footage to the AI server inbox
+3. System processes automatically
+4. Review clips in the outputs folder
+5. Import best clips into CapCut
+6. Add hook text, music, branding
+7. Export and publish
 
 ---
 
-# Next Improvements
+# Git Rules
 
-Future upgrades planned:
+The following folders are ignored:
 
-- smarter clip detection (multi-line scoring)
-- vertical crop for Shorts/TikTok
-- auto caption styling
-- auto publishing pipeline
-- searchable transcript index
+```
+archive/
+outputs/
+inbox/
+transcripts/
+clips/
+logs/
+venv/
+```
 
+Media files are not tracked by git.
+
+---
+
+# Roadmap
+
+Planned upgrades:
+
+- searchable transcript database
+- smarter clip detection
+- auto social media packaging
+- batch video ingestion
+- AI caption styling
+
+---
+
+# Purpose
+
+The goal of AI Media Lab is to transform raw footage into structured, searchable media assets that can be rapidly turned into publishable content.
