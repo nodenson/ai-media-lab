@@ -19,7 +19,7 @@ txt_file = output_dir / f"{input_file.stem}.txt"
 srt_file = output_dir / f"{input_file.stem}.srt"
 
 print("loading")
-model = WhisperModel("tiny", device="cuda", compute_type="float16")
+model = WhisperModel("small", device="cuda", compute_type="float16")
 
 print("transcribing")
 segments, info = model.transcribe(str(input_file), beam_size=5)

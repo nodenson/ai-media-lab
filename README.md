@@ -2,7 +2,9 @@
 
 Personal media automation pipeline for turning raw footage into searchable, editable content.
 
-## Goal
+---
+
+# Goal
 
 Build a workflow that:
 
@@ -14,49 +16,154 @@ Build a workflow that:
 - prepares content for editing in CapCut
 - supports edit once, publish everywhere
 
-## Current Status
+---
 
-- Ubuntu server is running
-- SSH is working
-- Faster-Whisper is installed and working
-- Transcription pipeline is working
-- Clip suggestion pipeline is working
-- FFmpeg clip cutting is working
-- Full pipeline script is working
-- Watcher automation is running
-- GitHub repo is live
+# Current Status
 
-## Current Workflow
+Working components:
 
-Capture -> Inbox -> Transcribe -> Find Clips -> Cut Clips -> Edit in CapCut -> Post -> Archive
+- Ubuntu server running
+- SSH access working
+- Python virtual environment active
+- Faster-Whisper transcription working
+- Clip suggestion system working
+- FFmpeg clip cutting working
+- Full pipeline script working
+- Inbox watcher automation running
+- GitHub repo initialized
 
-## Scripts
+---
 
-- `transcribe.py` — transcribes audio/video into text
-- `clip_finder.py` — scores transcript lines and suggests clip moments
-- `cut_clips.py` — cuts real video clips from suggested timestamps
-- `process_video.py` — runs the full pipeline on one file
-- `watch_inbox.py` — watches the inbox and triggers processing automatically
+# Folder Structure
 
-## Usage
+\`\`\`
+ai_lab/
+├── inbox/        # drop new videos here
+├── archive/      # processed source videos
+├── transcripts/  # .txt and .srt transcription outputs
+├── clips/        # suggested clip timestamps
+├── outputs/      # rendered clips
+├── logs/         # watcher logs
+├── models/       # downloaded AI models
+\`\`\`
 
-Run the full pipeline on one file:
+---
 
-```bash
+# Pipeline
+
+\`\`\`
+Capture
+   ↓
+Drop video in inbox
+   ↓
+Watcher detects file
+   ↓
+Transcribe speech
+   ↓
+Find clip moments
+   ↓
+Cut clips
+   ↓
+Outputs ready for editing
+   ↓
+Edit in CapCut
+   ↓
+Post
+   ↓
+Archive source
+\`\`\`
+
+---
+
+# Scripts
+
+\`transcribe.py\`
+- transcribes audio/video into text and subtitles
+
+\`clip_finder.py\`
+- scores transcript lines
+- identifies promising clip timestamps
+
+\`cut_clips.py\`
+- cuts clips using FFmpeg
+- optionally burns subtitles
+
+\`process_video.py\`
+- runs the full pipeline on a single file
+
+\`watch_inbox.py\`
+- monitors the inbox
+- automatically processes new files
+
+---
+
+# Basic Usage
+
+Run full pipeline manually:
+
+\`\`\`
 python3 process_video.py /path/to/video.mp4
+\`\`\`
 
 Run transcription only:
 
-'''bash
+\`\`\`
 python3 transcribe.py /path/to/video.mp4
+\`\`\`
 
-Run the watcher:
+Run watcher manually:
 
-'''bash
+\`\`\`
 python3 watch_inbox.py
+\`\`\`
 
-Notes
+Run watcher daemon:
 
-This repo is for code and lightweight text outputs. Raw media and generated clip files should stay out of version control.
+\`\`\`
+tmux new -d -s ailab '~/ai_lab/run_ai_lab.sh'
+\`\`\`
 
+View logs:
+
+\`\`\`
+tail -f ~/ai_lab/logs/watcher.log
+\`\`\`
+
+---
+
+# Drop-Folder Workflow
+
+1. Record footage
+2. Upload video to server
+3. Drop file into:
+
+\`\`\`
+~/ai_lab/inbox/
+\`\`\`
+
+The system will automatically:
+
+- transcribe
+- find clips
+- render outputs
+
+---
+
+# Notes
+
+- Raw media should not be committed to GitHub
+- Only scripts and lightweight outputs belong in the repo
+- Large media files stay local on the server
+
+---
+
+# Next Improvements
+
+Future upgrades planned:
+
+- smarter clip detection (multi-line scoring)
+- vertical crop for Shorts/TikTok
+- auto caption styling
+- auto publishing pipeline
+- searchable transcript index
 

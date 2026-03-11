@@ -16,8 +16,6 @@ output_dir = Path.home() / "ai_lab" / "clips"
 output_dir.mkdir(parents=True, exist_ok=True)
 output_file = output_dir / f"{transcript_file.stem}_clips.txt"
 
-lines = transcript_file.read_text(encoding="utf-8").splitlines()
-
 dramatic_words = {
     "power", "dark", "fear", "pain", "fight", "war", "fire", "death",
     "destroyer", "arrival", "shadow", "blood", "storm", "king", "god",
@@ -26,19 +24,21 @@ dramatic_words = {
 
 motivational_words = {
     "remember", "forgot", "alone", "hard", "afraid", "push", "strong",
-    "never", "more", "keep", "going", "become", "rise", "fall", "stand"
+    "never", "more", "keep", "going", "become", "rise", "fall", "stand",
+    "health", "discipline", "suffer", "work", "training", "effort"
 }
 
 hook_starts = (
     "you", "i", "this", "that", "we", "they", "let", "listen",
-    "watch", "remember", "imagine", "if", "when", "never"
+    "watch", "remember", "imagine", "if", "when", "never", "your"
 )
 
 filler_phrases = (
     "um", "uh", "like", "you know", "sort of", "kind of", "basically"
 )
 
-clips = []
+segments = []
+lines = transcript_file.read_text(encoding="utf-8").splitlines()
 
 for line in lines:
     m = re.match(r"\[(\d+\.\d+)-(\d+\.\d+)\]\s+(.*)", line)
@@ -47,18 +47,34 @@ for line in lines:
 
     start, end, text = m.groups()
     text = text.strip()
-    lower = text.lower()
-
-    if len(text) < 12:
+    if not text:
         continue
 
+    segments.append({
+        "start": float(start),
+        "end": float(end),
+        "text": text
+    })
+
+if not segments:
+    print("No valid transcript segments found.")
+    sys.exit(0)
+
+candidates = []
+
+def score_text(text: str, duration: float) -> int:
+    lower = text.lower()
     score = 1
 
     word_count = len(text.split())
-    if word_count >= 5:
+
+    if word_count >= 8:
+        score += 2
+    elif word_count >= 5:
         score += 1
-    if word_count >= 9:
-        score += 1
+
+    if word_count >= 15:
+        score += 2
 
     if text.endswith((".", "!", "?")):
         score += 2
@@ -78,29 +94,62 @@ for line in lines:
     if any(phrase in lower for phrase in filler_phrases):
         score -= 2
 
-    # Expand short timestamps into more usable clips
-    start_f = float(start)
-    end_f = float(end)
-    padded_start = max(0.0, start_f - 1.5)
-    padded_end = end_f + 1.5
+    if duration >= 8:
+        score += 1
+    if duration >= 12:
+        score += 1
+    if duration > 45:
+        score -= 2
 
-    clips.append((score, padded_start, padded_end, text))
+    return score
 
-# Sort by score first, then earlier clips first
-clips.sort(key=lambda x: (-x[0], x[1]))
+# Build clip candidates from windows of 1 to 3 adjacent transcript lines
+max_window = 3
 
-# Deduplicate near-overlapping results
+for i in range(len(segments)):
+    for window_size in range(1, max_window + 1):
+        j = i + window_size - 1
+        if j >= len(segments):
+            continue
+
+        block = segments[i:j + 1]
+        start_f = block[0]["start"]
+        end_f = block[-1]["end"]
+        duration = end_f - start_f
+
+        if duration < 4.0:
+            continue
+        if duration > 60.0:
+            continue
+
+        text = " ".join(seg["text"] for seg in block).strip()
+        if len(text) < 20:
+            continue
+
+        padded_start = max(0.0, start_f - 2.0)
+        padded_end = end_f + 2.5
+
+        score = score_text(text, duration)
+
+        candidates.append((score, padded_start, padded_end, text))
+
+# Sort by highest score first, then earlier clips first
+candidates.sort(key=lambda x: (-x[0], x[1]))
+
 selected = []
-for clip in clips:
-    score, start, end, text = clip
+for candidate in candidates:
+    score, start, end, text = candidate
     overlaps = False
+
     for existing in selected:
         _, ex_start, ex_end, _ = existing
         if not (end < ex_start or start > ex_end):
             overlaps = True
             break
+
     if not overlaps:
-        selected.append(clip)
+        selected.append(candidate)
+
     if len(selected) >= 10:
         break
 
